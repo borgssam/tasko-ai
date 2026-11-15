@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTasks } from '../context/TaskContext.jsx';
+import { AnimatePresence } from 'motion/react';
 import TaskCard from '../components/TaskCard.jsx';
 import BottomSheet from '../components/BottomSheet.jsx';
 
@@ -301,9 +302,12 @@ export default function DashboardScreen() {
             <p className="text-xs text-[#868E96] mt-0.5">우측 하단 (+) 버튼을 눌러 새 할 일을 등록해보세요</p>
           </div>
         ) : (
-          filteredTasks.map((task) => (
-            <TaskCard key={task.id} task={task} onToggle={toggleTask} />
-          ))
+          // 카드가 빠질 때 퇴장 효과가 보이도록 AnimatePresence로 감싼다
+          <AnimatePresence initial={false}>
+            {filteredTasks.map((task) => (
+              <TaskCard key={task.id} task={task} onToggle={toggleTask} />
+            ))}
+          </AnimatePresence>
         )}
       </main>
 

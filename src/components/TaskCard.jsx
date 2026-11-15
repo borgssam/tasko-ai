@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
+
+// motion.svg를 대문자 이름으로 한 번 받아 둔다 (JSX에서 쓰기 쉽고 린트도 통과)
+const MotionSvg = motion.svg;
+const MotionDiv = motion.div;
 import PriorityBadge from './PriorityBadge.jsx';
 
 /**
@@ -12,14 +17,31 @@ export default function TaskCard({ task, onToggle }) {
   const navigate = useNavigate();
   const isDone = task.completed;
 
+  // 방금 완료 체크를 눌렀는지 (이때만 '톡' 효과를 보여 준다)
+  const [justChecked, setJustChecked] = useState(false);
+
   const handleCardClick = () => {
     navigate(`/tasks/${task.id}`);
   };
 
   const handleCheckboxClick = (e) => {
     e.stopPropagation();
+    // 미완료 -> 완료로 바뀔 때만 효과를 켠다
+    if (!isDone) {
+      setJustChecked(true);
+    } else {
+      setJustChecked(false);
+    }
     onToggle(task.id);
   };
+
+  // 체크 표시 효과: 0.25초 동안 살짝 커졌다가 원래 크기로 돌아온다
+  let checkInitial = false;
+  let checkAnimate = { scale: 1 };
+  if (justChecked) {
+    checkInitial = { scale: 0.6 };
+    checkAnimate = { scale: [0.6, 1.25, 1] };
+  }
 
   const handleMoreClick = (e) => {
     e.stopPropagation();
@@ -30,6 +52,12 @@ export default function TaskCard({ task, onToggle }) {
   const isOverdue = task.isOverdue || (task.dueDate && task.dueDate.includes('기한 지남'));
 
   return (
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+    >
     <article
       onClick={handleCardClick}
       className={`relative flex items-center gap-3 p-3.5 bg-white rounded-2xl border transition-all duration-200 cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.04)] ${
@@ -50,9 +78,19 @@ export default function TaskCard({ task, onToggle }) {
         }`}
       >
         {isDone ? (
-          <svg className="w-4 h-4 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+          <MotionSvg
+            className="w-4 h-4 stroke-[2.5]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={checkInitial}
+            animate={checkAnimate}
+            transition={{ duration: 0.25, ease: 'easeOut', times: [0, 0.5, 1] }}
+          >
             <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          </MotionSvg>
         ) : (
           <div className="w-2 h-2 rounded-full bg-transparent"></div>
         )}
@@ -135,5 +173,6 @@ export default function TaskCard({ task, onToggle }) {
         </svg>
       </button>
     </article>
+    </MotionDiv>
   );
 }
