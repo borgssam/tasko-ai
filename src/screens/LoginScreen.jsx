@@ -41,7 +41,7 @@ export default function LoginScreen() {
             <span className="text-3xl font-extrabold text-[#212529] tracking-tight">Tasko</span>
           </div>
           <p className="text-sm font-medium text-[#495057]">
-            오늘 할 일을 이어서 관리해 보세요 (배포 연습)
+            오늘 할 일을 이어서 관리해 보세요
           </p>
         </div>
 
