@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTasks } from '../context/TaskContext.jsx';
 
@@ -27,17 +27,19 @@ export default function TaskDetailScreen() {
   const [completed, setCompleted] = useState(false);
   const [createdAt, setCreatedAt] = useState('2026.11.10');
 
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setPriority(task.priority || 'medium');
-      setTag(task.tag || '#생활');
-      setDueDate(task.dueDate || '');
-      setStarred(Boolean(task.starred));
-      setCompleted(Boolean(task.completed));
-      setCreatedAt(task.createdAt || '2026.11.10');
-    }
-  }, [task]);
+  // 마지막으로 폼에 채워 넣은 할 일을 기억해 둔다.
+  // 할 일이 바뀐 것을 렌더링 중에 알아차리면 폼 값을 새로 채운다. (useEffect 대신 쓰는 방법)
+  const [loadedTask, setLoadedTask] = useState(null);
+  if (task && task !== loadedTask) {
+    setLoadedTask(task);
+    setTitle(task.title);
+    setPriority(task.priority || 'medium');
+    setTag(task.tag || '#생활');
+    setDueDate(task.dueDate || '');
+    setStarred(Boolean(task.starred));
+    setCompleted(Boolean(task.completed));
+    setCreatedAt(task.createdAt || '2026.11.10');
+  }
 
   if (!task) {
     return (
