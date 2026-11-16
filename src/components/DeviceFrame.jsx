@@ -7,13 +7,14 @@ import React from 'react';
 export default function DeviceFrame({ children, hideStatusBar = false }) {
   return (
     <div className="min-h-screen bg-[#1A1E29] flex items-center justify-center p-0 md:p-6 select-none font-sans">
+      {/* 768px 미만(휴대폰): 화면에 꽉 차게(h-dvh), 768px 이상: 아이폰 틀(393×852) */}
       <div
-        className="w-full max-w-[393px] h-[852px] min-h-[852px] bg-[#F8F9FA] dark:bg-[#121417] rounded-none md:rounded-[48px] relative overflow-hidden flex flex-col shadow-2xl md:border-[8px] border-[#2C3240]"
+        className="w-full max-w-none md:max-w-[393px] h-dvh md:h-[852px] md:min-h-[852px] bg-[#F8F9FA] dark:bg-[#121417] rounded-none md:rounded-[48px] relative overflow-hidden flex flex-col shadow-2xl md:border-[8px] border-[#2C3240]"
         data-purpose="iphone-16-mockup"
       >
-        {/* iOS 상단 상태 표시줄 및 다이내믹 아일랜드 */}
+        {/* iOS 상단 상태 표시줄 및 다이내믹 아일랜드 (휴대폰에서는 숨김) */}
         {!hideStatusBar && (
-          <header className="w-full pt-3 px-7 flex justify-between items-center z-30 shrink-0 select-none bg-inherit">
+          <header className="hidden md:flex w-full pt-3 px-7 justify-between items-center z-30 shrink-0 select-none bg-inherit">
             <span className="text-[14px] font-semibold tracking-tight text-[#212529] dark:text-[#F1F3F5]">9:41</span>
             
             {/* 다이내믹 아일랜드 캡슐 */}
@@ -52,8 +53,8 @@ export default function DeviceFrame({ children, hideStatusBar = false }) {
           {children}
         </div>
 
-        {/* iOS 하단 홈 인디케이터 바 */}
-        <footer className="w-full pb-2 pt-1 flex justify-center shrink-0 z-30 select-none bg-inherit">
+        {/* iOS 하단 홈 인디케이터 바 (휴대폰에서는 숨김) */}
+        <footer className="hidden md:flex w-full pb-2 pt-1 justify-center shrink-0 z-30 select-none bg-inherit">
           <div className="w-36 h-1 bg-[#212529] dark:bg-[#F1F3F5] opacity-30 rounded-full"></div>
         </footer>
       </div>
