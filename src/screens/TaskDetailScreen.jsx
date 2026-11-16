@@ -62,28 +62,32 @@ export default function TaskDetailScreen() {
   };
 
   // 삭제 처리
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('이 할 일을 삭제하시겠습니까?')) {
-      deleteTask(taskId);
-      navigate(-1);
+      const ok = await deleteTask(taskId);
+      if (ok) {
+        navigate(-1);
+      }
     }
   };
 
-  // 저장 처리
-  const handleSave = (e) => {
+  // 저장 처리 (Supabase 저장이 성공하면 이전 화면으로)
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    updateTask(taskId, {
+    const ok = await updateTask(taskId, {
       title: title.trim(),
       priority,
       tag,
-      dueDate: dueDate.trim() || '오늘',
+      dueDate,
       starred,
       completed,
     });
 
-    navigate(-1);
+    if (ok) {
+      navigate(-1);
+    }
   };
 
   return (
@@ -257,7 +261,7 @@ export default function TaskDetailScreen() {
               <div className="relative">
                 <input
                   id="editDueDateInput"
-                  type="text"
+                  type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   className="w-full h-12 px-3.5 pr-10 rounded-xl border border-[#E9ECEF] dark:border-[#2C3036] bg-white dark:bg-[#1E2125] text-[#212529] dark:text-[#F1F3F5] font-medium text-[15px] focus:border-[#1EA65C] focus:ring-1 focus:ring-[#1EA65C] focus:outline-none transition-colors"

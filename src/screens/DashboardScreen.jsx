@@ -65,7 +65,7 @@ export default function DashboardScreen() {
       const match =
         task.title.toLowerCase().includes(q) ||
         task.tag.toLowerCase().includes(q) ||
-        (task.dueDate && task.dueDate.toLowerCase().includes(q));
+        (task.dueLabel && task.dueLabel.toLowerCase().includes(q));
       if (!match) return false;
     }
 

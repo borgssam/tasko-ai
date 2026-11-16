@@ -49,7 +49,7 @@ export default function TaskCard({ task, onToggle }) {
   };
 
   // 마감 기한 지남 여부 판별
-  const isOverdue = task.isOverdue || (task.dueDate && task.dueDate.includes('기한 지남'));
+  const isOverdue = task.isOverdue;
 
   return (
     <MotionDiv
@@ -155,7 +155,7 @@ export default function TaskCard({ task, onToggle }) {
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
-          <span>{task.dueDate}</span>
+          <span>{task.dueLabel}</span>
         </div>
       </div>
 
