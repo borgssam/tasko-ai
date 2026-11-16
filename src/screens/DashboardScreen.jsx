@@ -26,12 +26,30 @@ export default function DashboardScreen() {
     starredCount,
     percentage,
     categoryStats,
+    isLoading,
+    errorMessage,
   } = useTasks();
 
   const [currentFilter, setCurrentFilter] = useState('ALL'); // 'ALL' | 'IN_PROGRESS' | 'COMPLETED' | 'STARRED'
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
+
+  // 목록이 비어 있을 때 보여 줄 문구 (불러오는 중 / 에러 / 할 일 없음 / 검색 결과 없음)
+  let emptyTitle = '해당하는 할 일이 없습니다';
+  let emptySub = '우측 하단 (+) 버튼을 눌러 새 할 일을 등록해보세요';
+  let emptyTitleColor = 'text-[#495057] dark:text-[#ADB5BD]';
+  if (isLoading) {
+    emptyTitle = '불러오는 중…';
+    emptySub = '';
+  } else if (errorMessage) {
+    emptyTitle = errorMessage;
+    emptySub = '';
+    emptyTitleColor = 'text-[#FA5252]';
+  } else if (tasks.length === 0) {
+    emptyTitle = '할 일이 없습니다. + 버튼으로 추가해 보세요';
+    emptySub = '';
+  }
 
   // 로그아웃: Supabase 세션을 끝내고 로그인 화면으로 이동
   async function handleLogout() {
@@ -308,8 +326,8 @@ export default function DashboardScreen() {
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
             </div>
-            <p className="text-sm font-medium text-[#495057] dark:text-[#ADB5BD]">해당하는 할 일이 없습니다</p>
-            <p className="text-xs text-[#868E96] mt-0.5">우측 하단 (+) 버튼을 눌러 새 할 일을 등록해보세요</p>
+            <p className={'text-sm font-medium ' + emptyTitleColor}>{emptyTitle}</p>
+            {emptySub && <p className="text-xs text-[#868E96] mt-0.5">{emptySub}</p>}
           </div>
         ) : (
           // 카드가 빠질 때 퇴장 효과가 보이도록 AnimatePresence로 감싼다

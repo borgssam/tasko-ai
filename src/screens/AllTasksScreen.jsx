@@ -22,6 +22,8 @@ export default function AllTasksScreen() {
     completedCount,
     inProgressCount,
     starredCount,
+    isLoading,
+    errorMessage,
   } = useTasks();
 
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'IN_PROGRESS' | 'COMPLETED' | 'STARRED'
@@ -52,6 +54,22 @@ export default function AllTasksScreen() {
 
     return true;
   });
+
+  // 목록이 비어 있을 때 보여 줄 문구 (불러오는 중 / 에러 / 할 일 없음 / 조건에 맞는 할 일 없음)
+  let emptyTitle = '조건에 맞는 할 일이 없습니다';
+  let emptySub = '필터를 변경하거나 새 할 일을 추가해보세요';
+  let emptyTitleColor = 'text-[#495057] dark:text-[#ADB5BD]';
+  if (isLoading) {
+    emptyTitle = '불러오는 중…';
+    emptySub = '';
+  } else if (errorMessage) {
+    emptyTitle = errorMessage;
+    emptySub = '';
+    emptyTitleColor = 'text-[#FA5252]';
+  } else if (tasks.length === 0) {
+    emptyTitle = '할 일이 없습니다. + 버튼으로 추가해 보세요';
+    emptySub = '';
+  }
 
   return (
     <div className="relative w-full h-full bg-[#F8F9FA] dark:bg-[#121417] flex flex-col overflow-hidden select-none">
@@ -232,8 +250,8 @@ export default function AllTasksScreen() {
       <main className="flex-1 overflow-y-auto px-5 py-3.5 space-y-3 pb-24 no-scrollbar">
         {filteredTasks.length === 0 ? (
           <div className="h-44 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-[#1E2125] rounded-2xl border border-dashed border-[#E9ECEF] dark:border-[#2C3036]">
-            <p className="text-sm font-medium text-[#495057] dark:text-[#ADB5BD]">조건에 맞는 할 일이 없습니다</p>
-            <p className="text-xs text-[#868E96] mt-1">필터를 변경하거나 새 할 일을 추가해보세요</p>
+            <p className={'text-sm font-medium ' + emptyTitleColor}>{emptyTitle}</p>
+            {emptySub && <p className="text-xs text-[#868E96] mt-1">{emptySub}</p>}
           </div>
         ) : (
           // 카드가 빠질 때 퇴장 효과가 보이도록 AnimatePresence로 감싼다
