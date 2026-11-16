@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase.js';
 
 /**
  * Tasko 모바일 회원가입 화면
- * - 버튼 클릭 시 대시보드(/dashboard)로 이동합니다.
+ * - Supabase 이메일·비밀번호 가입에 성공하면 대시보드(/dashboard)로 이동합니다.
+ * - 이메일 인증이 켜져 있으면 안내 문구를 보여 줍니다.
  */
 export default function SignupScreen() {
   const navigate = useNavigate();
@@ -11,11 +13,71 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
 
-  const handleSubmit = (e) => {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Supabase 에러 메시지를 한국어로 바꿔 준다
+  function getKoreanError(error) {
+    const message = error.message || '';
+    if (message.includes('already registered')) {
+      return '이미 가입된 이메일이에요.';
+    }
+    if (message.includes('at least 6')) {
+      return '비밀번호는 6자 이상이어야 해요.';
+    }
+    if (message.includes('valid email') || message.includes('invalid')) {
+      return '올바른 이메일 주소를 입력해 주세요.';
+    }
+    return '문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
+  }
+
+  // 회원가입 버튼: Supabase 이메일·비밀번호 가입
+  async function handleSubmit(e) {
     e.preventDefault();
-    // 목업 회원가입 완료: 대시보드로 이동
-    navigate('/dashboard');
-  };
+    setErrorMessage('');
+    setInfoMessage('');
+
+    // 비밀번호와 확인이 같은지 먼저 검사
+    if (password !== passwordConfirm) {
+      setErrorMessage('비밀번호가 서로 달라요.');
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+    setIsLoading(false);
+
+    if (result.error) {
+      setErrorMessage(getKoreanError(result.error));
+      return;
+    }
+
+    // 이메일 인증이 꺼져 있으면 바로 로그인 상태(session)가 생긴다
+    if (result.data.session) {
+      navigate('/dashboard');
+      return;
+    }
+
+    // 이미 가입된 이메일이면 identities 가 비어서 돌아온다
+    const user = result.data.user;
+    if (user && user.identities && user.identities.length === 0) {
+      setErrorMessage('이미 가입된 이메일이에요.');
+      return;
+    }
+
+    // 이메일 인증이 켜져 있으면 메일 확인 안내를 보여 준다
+    setInfoMessage('인증 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.');
+  }
+
+  // 요청 중에는 버튼 글자를 바꾼다
+  let buttonLabel = '회원가입';
+  if (isLoading) {
+    buttonLabel = '가입 중...';
+  }
 
   return (
     <div className="w-full h-full bg-[#F8F9FA] dark:bg-[#121417] flex flex-col justify-between select-none">
@@ -45,6 +107,17 @@ export default function SignupScreen() {
 
         {/* 회원가입 폼 */}
         <form onSubmit={handleSubmit} className="w-full space-y-3.5">
+          {/* 에러 / 안내 문구 */}
+          {errorMessage && (
+            <p role="alert" className="text-xs font-medium text-[#FA5252]">
+              {errorMessage}
+            </p>
+          )}
+          {infoMessage && (
+            <p role="status" className="text-xs font-medium text-[#1EA65C]">
+              {infoMessage}
+            </p>
+          )}
           {/* 항목 1: 이메일 */}
           <div className="space-y-1.5">
             <label className="block text-[13px] font-medium text-[#495057] dark:text-[#ADB5BD] pl-0.5" htmlFor="signupEmail">
@@ -96,10 +169,11 @@ export default function SignupScreen() {
           {/* 회원가입 버튼 */}
           <div className="pt-2">
             <button
-              className="w-full h-[50px] bg-[#1EA65C] hover:bg-[#178449] active:scale-[0.99] text-white font-medium text-[15px] rounded-xl shadow-[0_4px_14px_rgba(30,166,92,0.25)] transition-all flex items-center justify-center cursor-pointer"
+              className="w-full h-[50px] bg-[#1EA65C] hover:bg-[#178449] active:scale-[0.99] disabled:opacity-60 text-white font-medium text-[15px] rounded-xl shadow-[0_4px_14px_rgba(30,166,92,0.25)] transition-all flex items-center justify-center cursor-pointer"
               type="submit"
+              disabled={isLoading}
             >
-              회원가입
+              {buttonLabel}
             </button>
           </div>
         </form>

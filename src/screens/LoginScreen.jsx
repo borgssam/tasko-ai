@@ -1,21 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase.js';
 
 /**
  * Tasko 모바일 로그인 화면
  * - 앱 첫 화면으로 사용됩니다.
- * - 버튼 클릭 시 대시보드(/dashboard)로 이동합니다.
+ * - Supabase 이메일·비밀번호 로그인에 성공하면 대시보드(/dashboard)로 이동합니다.
  */
 export default function LoginScreen() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('demo@tasko.app');
-  const [password, setPassword] = useState('••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Supabase 에러 메시지를 한국어로 바꿔 준다
+  function getKoreanError(error) {
+    const message = error.message || '';
+    if (message.includes('Invalid login credentials')) {
+      return '이메일 또는 비밀번호가 맞지 않아요.';
+    }
+    if (message.includes('Email not confirmed')) {
+      return '이메일 인증이 아직 안 됐어요. 메일함을 확인해 주세요.';
+    }
+    return '문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
+  }
+
+  // 로그인 버튼: Supabase 이메일·비밀번호 로그인
+  async function handleSubmit(e) {
     e.preventDefault();
-    // 목업 로그인: 대시보드로 이동
+    setErrorMessage('');
+    setIsLoading(true);
+
+    const result = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    setIsLoading(false);
+    if (result.error) {
+      setErrorMessage(getKoreanError(result.error));
+      return;
+    }
+    // 로그인 성공: 대시보드로 이동
     navigate('/dashboard');
-  };
+  }
+
+  // 요청 중에는 버튼 글자를 바꾼다
+  let buttonLabel = '로그인';
+  if (isLoading) {
+    buttonLabel = '로그인 중...';
+  }
 
   return (
     <div className="w-full h-full bg-[#F8F9FA] dark:bg-[#121417] flex flex-col justify-between select-none">
@@ -47,6 +82,12 @@ export default function LoginScreen() {
 
         {/* 로그인 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 에러 문구 */}
+          {errorMessage && (
+            <p role="alert" className="text-xs font-medium text-[#FA5252]">
+              {errorMessage}
+            </p>
+          )}
           {/* 이메일 입력창 */}
           <div className="space-y-1.5">
             <label htmlFor="loginEmail" className="block text-xs font-semibold text-[#495057] dark:text-[#ADB5BD]">
@@ -83,9 +124,10 @@ export default function LoginScreen() {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full h-12 bg-[#1EA65C] hover:bg-[#178449] active:scale-[0.98] text-white text-base font-semibold rounded-xl shadow-md shadow-[#1EA65C]/25 transition-all duration-150 flex items-center justify-center cursor-pointer"
+              disabled={isLoading}
+              className="w-full h-12 bg-[#1EA65C] hover:bg-[#178449] active:scale-[0.98] disabled:opacity-60 text-white text-base font-semibold rounded-xl shadow-md shadow-[#1EA65C]/25 transition-all duration-150 flex items-center justify-center cursor-pointer"
             >
-              로그인
+              {buttonLabel}
             </button>
           </div>
         </form>
